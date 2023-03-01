@@ -18,8 +18,8 @@ type PriceService struct {
 }
 
 // NewPriceServiceRepository price service repository constructor
-func NewPriceServiceRepository(ctx context.Context, pspp psProto.PriceServiceClient) (*PriceService, error) {
-	ps := &PriceService{client: pspp, ctx: ctx}
+func NewPriceServiceRepository(ctx context.Context, psp psProto.PriceServiceClient) (*PriceService, error) {
+	ps := &PriceService{client: psp, ctx: ctx}
 	err := ps.subscribe()
 	if err != nil {
 		return nil, fmt.Errorf("priceService - NewPriceServiceRepository - subscribe : %w", err)
@@ -51,7 +51,7 @@ func (ps *PriceService) GetPrices() ([]*model.Price, error) {
 	if err != nil {
 		return nil, fmt.Errorf("priceService - GetPrices - Recv: %e", err)
 	}
-	return fromGRPC(response.Prices), nil
+	return pricesFromGRPC(response.Prices), nil
 }
 
 // UpdateSubscription subscribe for new prices
@@ -63,7 +63,7 @@ func (ps *PriceService) UpdateSubscription(names []string) error {
 	return nil
 }
 
-func fromGRPC(recv []*psProto.Price) []*model.Price {
+func pricesFromGRPC(recv []*psProto.Price) []*model.Price {
 	result := make([]*model.Price, len(recv))
 	for i, p := range recv {
 		result[i] = &model.Price{
