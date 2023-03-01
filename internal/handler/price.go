@@ -25,7 +25,11 @@ type PriceService interface {
 }
 
 type PriceRequest struct {
-	Prices []string `json:"prices" validate:"required,dive,alpha,gte=2,lte=25"`
+	Names []string `json:"names" validate:"required,dive,alpha,gte=2,lte=25"`
+}
+
+type GetCurrentPriceResponse struct {
+	Prices map[string]*model.Price `json:"prices"`
 }
 
 // Price handler
@@ -100,26 +104,25 @@ func getPriceRequest(ws *websocket.Conn, out chan *PriceRequest) {
 
 // GetCurrentPrices godoc
 //
-// @Summary      decrease account amount
-// @Tags         accounts
+// @Summary      пet current prices
+// @Tags         prices
 // @Accept       json
 // @Produce      json
 // @Param        body	body  PriceRequest  true  "Prices list"
-// @Success      200
+// @Success      200   object	GetCurrentPriceResponse
 // @Failure      500
-// @Router       /decreaseAmount [post]
+// @Router       /getCurrentPrices [post]
 func (p *Price) GetCurrentPrices(c echo.Context) (err error) {
-	_, id := tokenFromContext(c)
-	amount := &AmountRequest{}
-	err = c.Bind(amount)
+	names := &PriceRequest{}
+	err = c.Bind(names)
 	if err != nil {
-		logrus.Error(fmt.Errorf("account - DecreaseAmount - Bind: %w", err))
+		logrus.Error(fmt.Errorf("price - GetCurrentPrices - Bind: %w", err))
 		return err
 	}
 
-	err = c.Validate(amount)
+	err = c.Validate(names)
 	if err != nil {
-		err = fmt.Errorf("account - DecreaseAmount - Validate: %w", err)
+		err = fmt.Errorf("price - GetCurrentPrices - Validate: %w", err)
 		logrus.Error(err)
 		return &echo.HTTPError{
 			Code:    http.StatusBadRequest,
@@ -127,9 +130,9 @@ func (p *Price) GetCurrentPrices(c echo.Context) (err error) {
 		}
 	}
 
-	err = p.priceService.GetCurrentPrices(c.Request().Context(), id, amount.Amount)
+	prices, err := p.priceService.GetCurrentPrices(c.Request().Context(), names.Names)
 	if err != nil {
-		err = fmt.Errorf("account - DecreaseAmount - IncreaseAmount: %w", err)
+		err = fmt.Errorf("price - GetCurrentPrices - GetCurrentPrices: %w", err)
 		logrus.Error(err)
 		return &echo.HTTPError{
 			Code:    http.StatusInternalServerError,
@@ -137,5 +140,5 @@ func (p *Price) GetCurrentPrices(c echo.Context) (err error) {
 		}
 	}
 
-	return c.JSON(http.StatusOK, "")
+	return c.JSON(http.StatusOK, GetCurrentPriceResponse{Prices: prices})
 }

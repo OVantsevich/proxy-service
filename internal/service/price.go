@@ -60,8 +60,6 @@ func getPricesListener(ctx context.Context, t *Price, errChan chan error) {
 				errChan <- fmt.Errorf("price - getPricesListener - GetPrices: %w", err)
 				continue
 			}
-			t.listenersRepository.SendPrices(prices)
-			t.listenerPNL.SendPricesPNL(prices)
 		}
 	}
 }
