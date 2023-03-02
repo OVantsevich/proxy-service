@@ -4,14 +4,15 @@ package handler
 import (
 	"context"
 	"fmt"
-	"golang.org/x/net/websocket"
 	"net/http"
 
 	"github.com/OVantsevich/proxy-service/internal/model"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/net/websocket"
 )
 
 // PriceService service interface for price service
@@ -21,13 +22,22 @@ type PriceService interface {
 	GetCurrentPrices(ctx context.Context, names []string) (map[string]*model.Price, error)
 
 	GetPrices() ([]*model.Price, error)
-	UpdateSubscription(names []string) error
+	Subscribe(streamID uuid.UUID) chan *model.Price
+	UpdateSubscription(socketID uuid.UUID, names []string) error
+	DeleteSubscription(streamID uuid.UUID) error
 }
 
+// PriceRequest websocket request
 type PriceRequest struct {
 	Names []string `json:"names" validate:"required,dive,alpha,gte=2,lte=25"`
 }
 
+// PriceResponse websocket response
+type PriceResponse struct {
+	Prices []*model.Price `json:"prices"`
+}
+
+// GetCurrentPriceResponse gcp response
 type GetCurrentPriceResponse struct {
 	Prices map[string]*model.Price `json:"prices"`
 }
@@ -57,48 +67,53 @@ func (p *Price) Subscribe(c echo.Context) error {
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer ws.Close()
 
-		in := make(chan interface{})
-		out := make(chan *PriceRequest)
+		socketID := uuid.New()
+		priceChan := p.priceService.Subscribe(socketID)
+		defer p.priceService.DeleteSubscription(socketID)
 
-		go sendPriceResponse(ws, in)
-		go getPriceRequest(ws, out)
+		out := make(chan *PriceRequest)
+		go getPrice(ws, out)
+		go sendPrice(ws, priceChan)
 
 		for {
-			select {}
-			fmt.Printf("%s\n", msg)
+			priceRequest, ok := <-out
+			if !ok {
+				return
+			}
+			err := p.priceService.UpdateSubscription(socketID, priceRequest.Names)
+			if err != nil {
+				logrus.Errorf("price - Subscribe - UpdateSubscription: %v", err)
+				return
+			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())
 	return nil
 }
 
-func sendPriceResponse(ws *websocket.Conn, in chan interface{}) {
+func sendPrice(ws *websocket.Conn, in chan *model.Price) {
 	for {
-		select {
-		case data, ok := <-in:
-			if !ok {
-				return
-			}
-			err := websocket.Message.Send(ws, data)
-			if err != nil {
-				logrus.Errorf("price - Subscribe - sendPriceResponse - Send: %v", err)
-				return
-			}
+		data, ok := <-in
+		if !ok {
+			return
+		}
+		err := websocket.Message.Send(ws, data)
+		if err != nil {
+			logrus.Errorf("price - Subscribe - sendPriceResponse - Send: %v", err)
+			return
 		}
 	}
 }
 
-func getPriceRequest(ws *websocket.Conn, out chan *PriceRequest) {
+func getPrice(ws *websocket.Conn, out chan *PriceRequest) {
 	for {
-		select {
-		default:
-			var priceRequest *PriceRequest
-			err := websocket.Message.Receive(ws, priceRequest)
-			if err != nil {
-				logrus.Errorf("price - Subscribe - getPriceRequest - Receive: %v", err)
-				return
-			}
-			out <- priceRequest
+		var priceRequest *PriceRequest
+		err := websocket.Message.Receive(ws, priceRequest)
+		if err != nil {
+			close(out)
+			logrus.Errorf("price - Subscribe - getPriceRequest - Receive: %v", err)
+			return
 		}
+		out <- priceRequest
 	}
 }
 

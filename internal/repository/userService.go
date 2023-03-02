@@ -39,7 +39,7 @@ func (u *UserService) Signup(ctx context.Context, user *model.User) (*model.User
 }
 
 // Login in user service
-func (u *UserService) Login(ctx context.Context, login string, password string) (*model.TokenPair, error) {
+func (u *UserService) Login(ctx context.Context, login, password string) (*model.TokenPair, error) {
 	resp, err := u.client.Login(ctx, &usProto.LoginRequest{
 		Login:    login,
 		Password: password,
@@ -54,7 +54,7 @@ func (u *UserService) Login(ctx context.Context, login string, password string) 
 }
 
 // Refresh refresh token pair
-func (u *UserService) Refresh(ctx context.Context, userID string, refresh string) (*model.TokenPair, error) {
+func (u *UserService) Refresh(ctx context.Context, userID, refresh string) (*model.TokenPair, error) {
 	resp, err := u.client.Refresh(ctx, &usProto.RefreshRequest{
 		Id:           userID,
 		RefreshToken: refresh,
@@ -91,16 +91,6 @@ func (u *UserService) GetByID(ctx context.Context, userID string) (*model.User, 
 		return nil, fmt.Errorf("userService - UserById - UserById: %w", err)
 	}
 	return userFromGRPC(resp.User), nil
-}
-
-func userToGRPC(user *model.User) *usProto.User {
-	return &usProto.User{
-		Id:    user.ID,
-		Login: user.Login,
-		Email: user.Email,
-		Name:  user.Name,
-		Age:   user.Age,
-	}
 }
 
 func userFromGRPC(user *usProto.User) *model.User {

@@ -42,7 +42,8 @@ func NewUserHandler(s UserService) *User {
 	return &User{userService: s, val: validator.New()}
 }
 
-type signupResponse struct {
+// SignupResponse signup response
+type SignupResponse struct {
 	*model.User
 	*model.TokenPair
 }
@@ -54,7 +55,7 @@ type signupResponse struct {
 // @Accept       json
 // @Produce      json
 // @Param        body	body     model.User  true  "New user object"
-// @Success      201	{object}	signupResponse
+// @Success      201	{object}	SignupResponse
 // @Failure      400
 // @Failure      500
 // @Router       /signup [post]
@@ -96,7 +97,7 @@ func (u *User) Signup(c echo.Context) (err error) {
 	}
 
 	return c.JSON(http.StatusCreated,
-		signupResponse{
+		SignupResponse{
 			userResponse,
 			tokenPair,
 		})
@@ -109,7 +110,7 @@ func (u *User) Signup(c echo.Context) (err error) {
 // @Accept       json
 // @Produce      json
 // @Param        body		body    model.User	true  "login and password"
-// @Success      201	{object}	tokenResponse
+// @Success      201	{object}	model.TokenPair
 // @Failure      500
 // @Router       /login [get]
 func (u *User) Login(c echo.Context) (err error) {
@@ -138,7 +139,7 @@ func (u *User) Login(c echo.Context) (err error) {
 // @Summary      Refresh accessToken and refreshToken
 // @Tags         users
 // @Produce      json
-// @Success      201	{object}	tokenResponse
+// @Success      201	{object}	model.TokenPair
 // @Failure      500
 // @Router       /refresh [get]
 // @Security Bearer
@@ -232,7 +233,7 @@ func (u *User) Update(c echo.Context) (err error) {
 		}
 	}
 
-	_, id := tokenFromContext(c)
+	id := tokenFromContext(c)
 	err = u.userService.Update(c.Request().Context(), id, user)
 	if err != nil {
 		logrus.Error(fmt.Errorf("user - Update - Update: %w", err))
@@ -252,7 +253,7 @@ func (u *User) Update(c echo.Context) (err error) {
 // @Accept       json
 // @Produce      json
 // @Param        id	 header   string	true  "login"
-// @Success      201	object	GetByLogin
+// @Success      201	object	model.User
 // @Failure      403
 // @Failure      500
 // @Router       /admin/userByLogin [get]
@@ -273,8 +274,8 @@ func (u *User) UserByID(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, user)
 }
 
-func tokenFromContext(c echo.Context) (tokenRaw, ID string) {
+func tokenFromContext(c echo.Context) (ID string) {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims
-	return user.Raw, claims.(*model.CustomClaims).ID
+	return claims.(*model.CustomClaims).ID
 }

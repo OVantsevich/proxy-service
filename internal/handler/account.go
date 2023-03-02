@@ -22,6 +22,7 @@ type AccountService interface {
 	DecreaseAmount(ctx context.Context, accountID string, amount float64) error
 }
 
+// AmountRequest inc dec amount request
 type AmountRequest struct {
 	Amount float64 `json:"amount" validate:"required,gte=0"`
 }
@@ -48,7 +49,7 @@ func NewAccountHandler(s AccountService) *Account {
 // @Failure      500
 // @Router       /getAccount [get]
 func (a *Account) GetAccount(c echo.Context) error {
-	_, id := tokenFromContext(c)
+	id := tokenFromContext(c)
 
 	account, err := a.accountService.GetAccount(c.Request().Context(), id)
 	if err != nil {
@@ -72,8 +73,10 @@ func (a *Account) GetAccount(c echo.Context) error {
 // @Success      200
 // @Failure      500
 // @Router       /increaseAmount [post]
+//
+//nolint:dupl //just because
 func (a *Account) IncreaseAmount(c echo.Context) (err error) {
-	_, id := tokenFromContext(c)
+	id := tokenFromContext(c)
 	amount := &AmountRequest{}
 	err = c.Bind(amount)
 	if err != nil {
@@ -114,8 +117,10 @@ func (a *Account) IncreaseAmount(c echo.Context) (err error) {
 // @Success      200
 // @Failure      500
 // @Router       /decreaseAmount [post]
+//
+//nolint:dupl //just because
 func (a *Account) DecreaseAmount(c echo.Context) (err error) {
-	_, id := tokenFromContext(c)
+	id := tokenFromContext(c)
 	amount := &AmountRequest{}
 	err = c.Bind(amount)
 	if err != nil {

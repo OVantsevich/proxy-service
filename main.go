@@ -2,22 +2,25 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/OVantsevich/proxy-service/internal/handler"
-	"github.com/OVantsevich/proxy-service/internal/service"
-	"google.golang.org/grpc/credentials/insecure"
 
 	pasProto "github.com/OVantsevich/Payment-Service/proto"
+	prsProto "github.com/OVantsevich/Price-Service/proto"
+	tsProto "github.com/OVantsevich/Trading-Service/proto"
 	usProto "github.com/OVantsevich/User-Service/proto"
 	"github.com/OVantsevich/proxy-service/internal/config"
+	"github.com/OVantsevich/proxy-service/internal/handler"
 	"github.com/OVantsevich/proxy-service/internal/model"
 	"github.com/OVantsevich/proxy-service/internal/repository"
+	"github.com/OVantsevich/proxy-service/internal/service"
 
 	"github.com/golang-jwt/jwt/v4"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // @title Trading service API
@@ -80,4 +83,40 @@ func main() {
 	withAuthentication.GET("/getAccount", accountHandler.GetAccount)
 	withAuthentication.POST("/increaseAmount", accountHandler.IncreaseAmount)
 	withAuthentication.POST("/decreaseAmount", accountHandler.DecreaseAmount)
+
+	connPrice, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.PriceServiceHost, cfg.PriceServicePort), opts...)
+	if err != nil {
+		logrus.Fatal("Fatal Dial: ", err)
+	}
+	prsClient := prsProto.NewPriceServiceClient(connPrice)
+	priceRepository, err := repository.NewPriceServiceRepository(context.Background(), prsClient)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	priceService := service.NewPriceService(context.Background(), priceRepository, repository.NewListenersRepository())
+	priceHandler := handler.NewPriceHandler(priceService)
+
+	withAuthentication.GET("/getCurrentPrices", priceHandler.GetCurrentPrices)
+	withAuthentication.GET("/subscribe", priceHandler.Subscribe)
+
+	connTrading, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.TradingServiceHost, cfg.TradingServicePort), opts...)
+	if err != nil {
+		logrus.Fatal("Fatal Dial: ", err)
+	}
+	tsClient := tsProto.NewTradingServiceClient(connTrading)
+	tradingRepository, err := repository.NewTradingServiceRepository(tsClient)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	tradingService := service.NewTradingService(tradingRepository)
+	tradingHandler := handler.NewTradingHandler(tradingService)
+
+	withAuthentication.POST("/openPosition", tradingHandler.OpenPosition)
+	withAuthentication.GET("/getUserPositions", tradingHandler.GetUserPositions)
+	withAuthentication.GET("/getPositionByID", tradingHandler.GetPositionByID)
+	withAuthentication.POST("/setTakeProfit", tradingHandler.SetTakeProfit)
+	withAuthentication.POST("/setStopLoss", tradingHandler.SetStopLoss)
+	withAuthentication.POST("/closePosition", tradingHandler.ClosePosition)
+
+	logrus.Fatal(e.Start(fmt.Sprintf(":%s", cfg.Port)))
 }

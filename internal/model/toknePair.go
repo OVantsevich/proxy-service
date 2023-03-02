@@ -1,7 +1,6 @@
-// Package model token pair model
 package model
 
-// TokenPair access and refresh token
+// TokenPair access and refresh
 type TokenPair struct {
 	Access  string
 	Refresh string

@@ -63,12 +63,3 @@ func accountFromGRPC(acc *psProto.Account) *model.Account {
 	}
 	return modelPos
 }
-
-func accountToGRPC(acc *model.Account) *psProto.Account {
-	modelPos := &psProto.Account{
-		ID:     acc.ID,
-		Amount: acc.Amount,
-		UserID: acc.User,
-	}
-	return modelPos
-}

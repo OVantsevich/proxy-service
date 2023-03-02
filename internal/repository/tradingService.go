@@ -4,21 +4,20 @@ package repository
 import (
 	"context"
 	"fmt"
-	"github.com/OVantsevich/proxy-service/internal/model"
-	"time"
 
 	tsProto "github.com/OVantsevich/Trading-Service/proto"
+	"github.com/OVantsevich/proxy-service/internal/model"
 )
 
 // TradingService entity
 type TradingService struct {
-	ctx    context.Context
+	context.Context
 	client tsProto.TradingServiceClient
 }
 
 // NewTradingServiceRepository trading service repository constructor
-func NewTradingServiceRepository(ctx context.Context, trp tsProto.TradingServiceClient) (*TradingService, error) {
-	ps := &TradingService{client: trp, ctx: ctx}
+func NewTradingServiceRepository(trp tsProto.TradingServiceClient) (*TradingService, error) {
+	ps := &TradingService{client: trp}
 	return ps, nil
 }
 
@@ -99,29 +98,6 @@ func (t *TradingService) ClosePosition(ctx context.Context, positionID string) e
 	return nil
 }
 
-func positionToGRPC(pos *model.Position) *tsProto.Position {
-	prPos := &tsProto.Position{
-		Id:            pos.ID,
-		Name:          pos.Name,
-		Amount:        pos.Amount,
-		Closed:        pos.Closed,
-		ShortPosition: pos.ShortPosition,
-		SellingPrice:  pos.SellingPrice,
-		PurchasePrice: pos.PurchasePrice,
-	}
-	if pos.StopLoss != 0 {
-		prPos.StopLoss = &pos.StopLoss
-	}
-	if pos.TakeProfit != 0 {
-		prPos.TakeProfit = &pos.TakeProfit
-	}
-	if !pos.Created.IsZero() {
-		createUnix := pos.Created.Unix()
-		prPos.Created = &createUnix
-	}
-	return prPos
-}
-
 func positionFromGRPC(pos *tsProto.Position) *model.Position {
 	modelPos := &model.Position{
 		ID:            pos.Id,
@@ -137,10 +113,6 @@ func positionFromGRPC(pos *tsProto.Position) *model.Position {
 	}
 	if pos.TakeProfit != nil {
 		modelPos.TakeProfit = *pos.TakeProfit
-	}
-	if pos.Created != nil {
-		created := time.Unix(*pos.Created, 0)
-		modelPos.Created = created
 	}
 	return modelPos
 }
