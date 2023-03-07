@@ -3,9 +3,9 @@ module github.com/OVantsevich/proxy-service
 go 1.19
 
 require (
-	github.com/OVantsevich/Payment-Service v0.0.0-20230228052510-039f0a17d508
+	github.com/OVantsevich/Payment-Service v0.0.0-20230307061156-907ac6d21c7f
 	github.com/OVantsevich/Price-Service v0.0.2-0.20230228052534-9c2620c2b331
-	github.com/OVantsevich/Trading-Service v0.0.0-20230301055331-4458f5cef7cf
+	github.com/OVantsevich/Trading-Service v0.0.0-20230307055255-a92b09ca07e8
 	github.com/OVantsevich/User-Service v0.0.0-20230301053958-a5fd26a53318
 	github.com/caarlos0/env/v7 v7.0.0
 	github.com/go-playground/validator/v10 v10.11.2

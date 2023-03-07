@@ -2,10 +2,14 @@ github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
 github.com/OVantsevich/Payment-Service v0.0.0-20230228052510-039f0a17d508 h1:3Rvph3MNJsEKkG2fk25mmC41pSrWfKfxm0aTbq/NvYY=
 github.com/OVantsevich/Payment-Service v0.0.0-20230228052510-039f0a17d508/go.mod h1:1yOzLfSFzYeURZOUI+dgGBEbsemjl6Ner8FlPx3BxQE=
+github.com/OVantsevich/Payment-Service v0.0.0-20230307061156-907ac6d21c7f h1:SlcjOk+JKOegnELL/66FW2rp90GqtZ6sAjSJXYKClwM=
+github.com/OVantsevich/Payment-Service v0.0.0-20230307061156-907ac6d21c7f/go.mod h1:1yOzLfSFzYeURZOUI+dgGBEbsemjl6Ner8FlPx3BxQE=
 github.com/OVantsevich/Price-Service v0.0.2-0.20230228052534-9c2620c2b331 h1:fL+MeWjt8+Lgdtuo1xxlGZB4TsdvOSRXjdszvUjUgDg=
 github.com/OVantsevich/Price-Service v0.0.2-0.20230228052534-9c2620c2b331/go.mod h1:Yfdp2A/GrClqicwoyGdNtDBgIbzrCn1+0boL/D8yHm8=
 github.com/OVantsevich/Trading-Service v0.0.0-20230301055331-4458f5cef7cf h1:iqq6H+ojCxtTkcqrf3jgPUaOV++65Hq5F5d8Jsdsw4M=
 github.com/OVantsevich/Trading-Service v0.0.0-20230301055331-4458f5cef7cf/go.mod h1:dzjqgPS+2jGVXAHwuEuZBH2X/IHSuZsH4HfekCqUqsI=
+github.com/OVantsevich/Trading-Service v0.0.0-20230307055255-a92b09ca07e8 h1:R9z3yXhthtNrw8O+KdWb5qZ7O819QMOSDzaeCRPL/+Y=
+github.com/OVantsevich/Trading-Service v0.0.0-20230307055255-a92b09ca07e8/go.mod h1:dzjqgPS+2jGVXAHwuEuZBH2X/IHSuZsH4HfekCqUqsI=
 github.com/OVantsevich/User-Service v0.0.0-20230301053958-a5fd26a53318 h1:1Bxrf0mLfAn4AYFGEWzAVROAL6hzfR9FL5uKIdDsJAM=
 github.com/OVantsevich/User-Service v0.0.0-20230301053958-a5fd26a53318/go.mod h1:1hKVZItQeZQLuHDLUkgRywN2jQE5KEuEoH2ZINmr4Fo=
 github.com/PuerkitoBio/purell v1.1.1 h1:WEQqlqaGbrPkxLJWfBwQmfEAE1Z7ONdDLqrN38tNFfI=
