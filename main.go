@@ -53,6 +53,7 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 // @name Authorization
 // @description Type "Bearer" followed by a space and JWT token.
 func main() {
+	logrus.Infof("Main enter")
 	e := echo.New()
 	e.Validator = &CustomValidator{validator: validator.New()}
 
@@ -71,6 +72,7 @@ func main() {
 	userRepository := repository.NewUserServiceRepository(usClient)
 	userService := service.NewUserService(userRepository)
 	userHandler := handler.NewUserHandler(userService, cfg.JwtKey)
+	logrus.Infof("user handler started")
 
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
@@ -104,6 +106,7 @@ func main() {
 	accountRepository := repository.NewPaymentServiceRepository(psClient)
 	accountService := service.NewAccountService(accountRepository)
 	accountHandler := handler.NewAccountHandler(accountService)
+	logrus.Infof("account handler started")
 
 	withAuthentication.GET("/createAccount", accountHandler.CreateAccount)
 	withAuthentication.GET("/getUserAccount", accountHandler.GetUserAccount)
@@ -121,6 +124,7 @@ func main() {
 	}
 	priceService := service.NewPriceService(context.Background(), priceRepository, repository.NewListenersRepository())
 	priceHandler := handler.NewPriceHandler(priceService)
+	logrus.Infof("price handler started")
 
 	withAuthentication.GET("/getCurrentPrices", priceHandler.GetCurrentPrices)
 	withAuthentication.GET("/subscribe", priceHandler.Subscribe)
@@ -136,6 +140,7 @@ func main() {
 	}
 	tradingService := service.NewTradingService(tradingRepository)
 	tradingHandler := handler.NewTradingHandler(tradingService)
+	logrus.Infof("trading handler started")
 
 	withAuthentication.POST("/openPosition", tradingHandler.OpenPosition)
 	withAuthentication.GET("/getUserPositions", tradingHandler.GetUserPositions)

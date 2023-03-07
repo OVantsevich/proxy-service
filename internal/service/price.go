@@ -46,7 +46,7 @@ type Price struct {
 // NewPriceService new price service
 func NewPriceService(ctx context.Context, rps PriceRepository, lr ListenersRepository) *Price {
 	price := &Price{priceRepository: rps, lisRepos: lr}
-	price.cycle(ctx)
+	go price.cycle(ctx)
 	return price
 }
 
