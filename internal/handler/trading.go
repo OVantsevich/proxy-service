@@ -48,18 +48,28 @@ func NewTradingHandler(s TradingService) *Trading {
 	return &Trading{tradingService: s, val: validator.New()}
 }
 
+// OpenPositionRequest open position request
+type OpenPositionRequest struct {
+	User          string  `json:"user"`
+	Name          string  `json:"name" validate:"required,alpha,gte=2,lte=30"`
+	Amount        float64 `json:"amount" validate:"required,gte=0"`
+	ShortPosition bool    `json:"short_position" validate:"required"`
+}
+
 // OpenPosition godoc
 //
-// @Summary      Open new position
+// @Summary      open new position
 // @Tags         trading
 // @Accept       json
 // @Produce      json
-// @Param        body	body     	model.Position  true  "New position"
-// @Success      201	{object}	model.Position
-// @Failure      500
+// @Param        position	body     	OpenPositionRequest  true  "New position"
+// @Success      201		{object}	model.Position
+// @Failure      400		{object}	echo.HTTPError
+// @Failure      500		{object}	echo.HTTPError
 // @Router       /openPosition [post]
+// @Security Bearer
 func (t *Trading) OpenPosition(c echo.Context) error {
-	id := tokenFromContext(c)
+	id := idFromContext(c)
 
 	position := &model.Position{}
 	err := c.Bind(position)
@@ -93,14 +103,16 @@ func (t *Trading) OpenPosition(c echo.Context) error {
 
 // GetPositionByID godoc
 //
-// @Summary      Get position by ID
+// @Summary      getting position by ID
 // @Tags         trading
 // @Accept       json
 // @Produce      json
-// @Param        id		header   	  	string  true  "Position ID"
+// @Param        id		header   	string	true	"id"
 // @Success      200	{object}	model.Position
-// @Failure      500
+// @Failure      403	{object}	echo.HTTPError
+// @Failure      500	{object}	echo.HTTPError
 // @Router       /getPositionByID [get]
+// @Security Bearer
 //
 //nolint:dupl //just because
 func (t *Trading) GetPositionByID(c echo.Context) error {
@@ -135,35 +147,21 @@ func (t *Trading) GetPositionByID(c echo.Context) error {
 
 // GetUserPositions godoc
 //
-// @Summary      Get al user positions
+// @Summary      getting all user positions
 // @Tags         trading
 // @Accept       json
 // @Produce      json
-// @Param        id		header   	  	string  true  "User ID"
-// @Success      200	{array}	model.Position
-// @Failure      500
-// @Router       /getUserPosition [get]
+// @Success      200	{array}		model.Position
+// @Failure      400	{object}	echo.HTTPError
+// @Failure      500	{object}	echo.HTTPError
+// @Router       /getUserPositions [get]
+// @Security Bearer
 //
 //nolint:dupl //just because
 func (t *Trading) GetUserPositions(c echo.Context) error {
-	request := &GetPositionByIDRequest{}
-	err := c.Bind(request)
-	if err != nil {
-		logrus.Error(fmt.Errorf("trading - GetUserPositions - Bind: %w", err))
-		return err
-	}
+	id := c.Request().Header.Get("id")
 
-	err = c.Validate(request)
-	if err != nil {
-		err = fmt.Errorf("trading - GetUserPositions - Validate: %w", err)
-		logrus.Error(err)
-		return &echo.HTTPError{
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
-		}
-	}
-
-	positionResponse, err := t.tradingService.GetUserPositions(c.Request().Context(), request.ID)
+	positionResponse, err := t.tradingService.GetUserPositions(c.Request().Context(), id)
 	if err != nil {
 		logrus.Error(fmt.Errorf("trading - GetUserPositions - GetUserPositions: %w", err))
 		return &echo.HTTPError{
@@ -177,14 +175,16 @@ func (t *Trading) GetUserPositions(c echo.Context) error {
 
 // SetStopLoss godoc
 //
-// @Summary      Set stop loss for position
+// @Summary      set stop loss for position
 // @Tags         trading
 // @Accept       json
 // @Produce      json
 // @Param        id		body   	  	SetThresholdRequest  true  "ID and threshold of position"
 // @Success      200
-// @Failure      500
+// @Failure      400	{object}	echo.HTTPError
+// @Failure      500	{object}	echo.HTTPError
 // @Router       /setStopLoss [post]
+// @Security Bearer
 //
 //nolint:dupl //just because
 func (t *Trading) SetStopLoss(c echo.Context) error {
@@ -219,14 +219,16 @@ func (t *Trading) SetStopLoss(c echo.Context) error {
 
 // SetTakeProfit godoc
 //
-// @Summary      Set take profit for position
+// @Summary      set take profit for position
 // @Tags         trading
 // @Accept       json
 // @Produce      json
 // @Param        id		body   	  	SetThresholdRequest  true  "ID and threshold of position"
-// @Success      201	{object}	model.Position
-// @Failure      500
+// @Success      200	{object}	model.Position
+// @Failure      400	{object}	echo.HTTPError
+// @Failure      500	{object}	echo.HTTPError
 // @Router       /setTakeProfit [post]
+// @Security Bearer
 //
 //nolint:dupl //just because
 func (t *Trading) SetTakeProfit(c echo.Context) error {
@@ -261,14 +263,15 @@ func (t *Trading) SetTakeProfit(c echo.Context) error {
 
 // ClosePosition godoc
 //
-// @Summary      Close position
+// @Summary      close position
 // @Tags         trading
 // @Accept       json
 // @Produce      json
-// @Param        id		header   	  	string  true  "Position ID"
+// @Param        id		header   	string  true  "Position ID"
 // @Success      200
-// @Failure      500
+// @Failure      500	{object}	echo.HTTPError
 // @Router       /closePosition [post]
+// @Security Bearer
 func (t *Trading) ClosePosition(c echo.Context) error {
 	var request string
 	err := c.Bind(request)

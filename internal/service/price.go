@@ -106,7 +106,7 @@ func (p *Price) cycle(ctx context.Context) {
 		default:
 			prices, err = p.priceRepository.GetPrices()
 			if err != nil {
-				logrus.Fatalf("prices - cycle - GetPrices: %e", err)
+				logrus.Fatalf("prices - cycle - GetPrices: %v", err)
 				return
 			}
 			p.lisRepos.Send(prices)

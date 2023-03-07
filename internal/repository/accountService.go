@@ -20,6 +20,17 @@ func NewPaymentServiceRepository(psp psProto.PaymentServiceClient) *PaymentServi
 	return ps
 }
 
+// CreateAccount create account
+func (p *PaymentService) CreateAccount(ctx context.Context, userID string) (*model.Account, error) {
+	resp, err := p.client.CreateAccount(ctx, &psProto.CreateAccountRequest{
+		UserID: userID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("paymentService - CreateAccount - CreateAccount: %w", err)
+	}
+	return accountFromGRPC(resp.Account), nil
+}
+
 // GetAccount get user account
 func (p *PaymentService) GetAccount(ctx context.Context, userID string) (*model.Account, error) {
 	resp, err := p.client.GetAccount(ctx, &psProto.GetAccountRequest{

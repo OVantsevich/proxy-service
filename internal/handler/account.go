@@ -8,7 +8,6 @@ import (
 
 	"github.com/OVantsevich/proxy-service/internal/model"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -17,39 +16,58 @@ import (
 //
 //go:generate mockery --name=AccountService --case=underscore --output=./mocks
 type AccountService interface {
+	CreateAccount(ctx context.Context, userID string) (*model.Account, error)
 	GetAccount(ctx context.Context, userID string) (*model.Account, error)
 	IncreaseAmount(ctx context.Context, accountID string, amount float64) error
 	DecreaseAmount(ctx context.Context, accountID string, amount float64) error
 }
 
-// AmountRequest inc dec amount request
-type AmountRequest struct {
-	Amount float64 `json:"amount" validate:"required,gte=0"`
-}
-
 // Account handler
 type Account struct {
 	accountService AccountService
-
-	val *validator.Validate
 }
 
 // NewAccountHandler new account handler
 func NewAccountHandler(s AccountService) *Account {
-	return &Account{accountService: s, val: validator.New()}
+	return &Account{accountService: s}
 }
 
-// GetAccount godoc
+// CreateAccount godoc
 //
-// @Summary      Get user account
+// @Summary      creating account for user
+// @Tags         accounts
+// @Produce      json
+// @Success      201	{object}	model.Account
+// @Failure      500	{object}	echo.HTTPError
+// @Router       /createAccount [post]
+// @Security Bearer
+func (a *Account) CreateAccount(c echo.Context) (err error) {
+	id := idFromContext(c)
+
+	account, err := a.accountService.CreateAccount(c.Request().Context(), id)
+	if err != nil {
+		logrus.Error(fmt.Errorf("account - CreateAccount - CreateAccount: %w", err))
+		return &echo.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+
+	return c.JSON(http.StatusCreated, account)
+}
+
+// GetUserAccount godoc
+//
+// @Summary      getting account by user id
 // @Tags         accounts
 // @Accept       json
 // @Produce      json
 // @Success      200	{object}	model.Account
-// @Failure      500
-// @Router       /getAccount [get]
-func (a *Account) GetAccount(c echo.Context) error {
-	id := tokenFromContext(c)
+// @Failure      500	{object}	echo.HTTPError
+// @Router       /getUserAccount [get]
+// @Security Bearer
+func (a *Account) GetUserAccount(c echo.Context) error {
+	id := idFromContext(c)
 
 	account, err := a.accountService.GetAccount(c.Request().Context(), id)
 	if err != nil {
@@ -63,20 +81,26 @@ func (a *Account) GetAccount(c echo.Context) error {
 	return c.JSON(http.StatusOK, account)
 }
 
+// AmountRequest inc dec amount request
+type AmountRequest struct {
+	Amount float64 `json:"amount" validate:"required,gte=0"`
+}
+
 // IncreaseAmount godoc
 //
 // @Summary      increase account amount
 // @Tags         accounts
 // @Accept       json
 // @Produce      json
-// @Param        body	body  AmountRequest  true  "Amount of operation"
+// @Param        amount	body 		AmountRequest  true  "Amount of operation"
 // @Success      200
-// @Failure      500
+// @Failure      500	{object}	echo.HTTPError
 // @Router       /increaseAmount [post]
+// @Security Bearer
 //
 //nolint:dupl //just because
 func (a *Account) IncreaseAmount(c echo.Context) (err error) {
-	id := tokenFromContext(c)
+	id := idFromContext(c)
 	amount := &AmountRequest{}
 	err = c.Bind(amount)
 	if err != nil {
@@ -113,14 +137,15 @@ func (a *Account) IncreaseAmount(c echo.Context) (err error) {
 // @Tags         accounts
 // @Accept       json
 // @Produce      json
-// @Param        body	body  AmountRequest  true  "Amount of operation"
+// @Param        amount	body  		AmountRequest  true  "Amount of operation"
 // @Success      200
-// @Failure      500
+// @Failure      500	{object}	echo.HTTPError
 // @Router       /decreaseAmount [post]
+// @Security Bearer
 //
 //nolint:dupl //just because
 func (a *Account) DecreaseAmount(c echo.Context) (err error) {
-	id := tokenFromContext(c)
+	id := idFromContext(c)
 	amount := &AmountRequest{}
 	err = c.Bind(amount)
 	if err != nil {

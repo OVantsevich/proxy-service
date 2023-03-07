@@ -11,6 +11,7 @@ import (
 //
 //go:generate mockery --name=AccountRepository --case=underscore --output=./mocks
 type AccountRepository interface {
+	CreateAccount(ctx context.Context, userID string) (*model.Account, error)
 	GetAccount(ctx context.Context, userID string) (*model.Account, error)
 	IncreaseAmount(ctx context.Context, accountID string, amount float64) error
 	DecreaseAmount(ctx context.Context, accountID string, amount float64) error
@@ -24,6 +25,11 @@ type Account struct {
 // NewAccountService new account service
 func NewAccountService(rps AccountRepository) *Account {
 	return &Account{accountRepository: rps}
+}
+
+// CreateAccount create account
+func (a *Account) CreateAccount(ctx context.Context, userID string) (*model.Account, error) {
+	return a.accountRepository.CreateAccount(ctx, userID)
 }
 
 // GetAccount get user account

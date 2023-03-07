@@ -37,11 +37,6 @@ type PriceResponse struct {
 	Prices []*model.Price `json:"prices"`
 }
 
-// GetCurrentPriceResponse gcp response
-type GetCurrentPriceResponse struct {
-	Prices map[string]*model.Price `json:"prices"`
-}
-
 // Price handler
 type Price struct {
 	priceService PriceService
@@ -63,6 +58,7 @@ func NewPriceHandler(s PriceService) *Price {
 // @Success      200
 // @Failure      500
 // @Router       /subscribe [get]
+// @Security Bearer
 func (p *Price) Subscribe(c echo.Context) error {
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer ws.Close()
@@ -117,16 +113,22 @@ func getPrice(ws *websocket.Conn, out chan *PriceRequest) {
 	}
 }
 
+// GetCurrentPriceResponse gcp response
+type GetCurrentPriceResponse struct {
+	Prices map[string]*model.Price `json:"prices"`
+}
+
 // GetCurrentPrices godoc
 //
-// @Summary      пet current prices
+// @Summary      get current prices
 // @Tags         prices
 // @Accept       json
 // @Produce      json
-// @Param        body	body  PriceRequest  true  "Prices list"
-// @Success      200   object	GetCurrentPriceResponse
-// @Failure      500
+// @Param        body	body 	PriceRequest  true  "Prices list"
+// @Success      200   	object	GetCurrentPriceResponse
+// @Failure      500	{object}	echo.HTTPError
 // @Router       /getCurrentPrices [post]
+// @Security Bearer
 func (p *Price) GetCurrentPrices(c echo.Context) (err error) {
 	names := &PriceRequest{}
 	err = c.Bind(names)

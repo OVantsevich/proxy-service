@@ -10,7 +10,7 @@ import (
 // MainConfig with init data
 type MainConfig struct {
 	JwtKey string `env:"JWT_KEY,notEmpty" envDefault:"874967EC3EA3490F8F2EF6478B72A756"`
-	Port   string `env:"PORT,notEmpty" envDefault:"6000"`
+	Port   string `env:"PORT,notEmpty" envDefault:"6001"`
 
 	PriceServicePort string `env:"PRICE_SERVICE_PORT,notEmpty" envDefault:"4000"`
 	PriceServiceHost string `env:"PRICE_SERVICE_HOST,notEmpty" envDefault:"localhost"`

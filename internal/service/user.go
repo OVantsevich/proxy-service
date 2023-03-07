@@ -7,7 +7,7 @@ import (
 	"github.com/OVantsevich/proxy-service/internal/model"
 )
 
-// UserRepository repository interface for user service
+// UserRepository user repository interface for user service
 //
 //go:generate mockery --name=UserRepository --case=underscore --output=./mocks
 type UserRepository interface {
