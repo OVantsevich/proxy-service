@@ -121,8 +121,7 @@ func (t *Trading) OpenPosition(c echo.Context) error {
 //
 //nolint:dupl //just because
 func (t *Trading) GetPositionByID(c echo.Context) error {
-	request := &GetPositionByIDRequest{}
-	request.ID = c.Request().Header.Get("id")
+	request := c.Request().Header.Get("id")
 
 	err := c.Validate(request)
 	if err != nil {
@@ -134,7 +133,7 @@ func (t *Trading) GetPositionByID(c echo.Context) error {
 		}
 	}
 
-	positionResponse, err := t.tradingService.GetPositionByID(c.Request().Context(), request.ID)
+	positionResponse, err := t.tradingService.GetPositionByID(c.Request().Context(), request)
 	if err != nil {
 		logrus.Error(fmt.Errorf("trading - GetPositionByID - GetPositionByID: %w", err))
 		return &echo.HTTPError{
@@ -160,7 +159,7 @@ func (t *Trading) GetPositionByID(c echo.Context) error {
 //
 //nolint:dupl //just because
 func (t *Trading) GetUserPositions(c echo.Context) error {
-	id := c.Request().Header.Get("id")
+	id := idFromContext(c)
 
 	positionResponse, err := t.tradingService.GetUserPositions(c.Request().Context(), id)
 	if err != nil {
