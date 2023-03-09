@@ -274,14 +274,9 @@ func (t *Trading) SetTakeProfit(c echo.Context) error {
 // @Router       /closePosition [post]
 // @Security Bearer
 func (t *Trading) ClosePosition(c echo.Context) error {
-	var request string
-	err := c.Bind(request)
-	if err != nil {
-		logrus.Error(fmt.Errorf("trading - ClosePosition - Bind: %w", err))
-		return err
-	}
+	request := c.Request().Header.Get("id")
 
-	err = t.tradingService.ClosePosition(c.Request().Context(), request)
+	err := t.tradingService.ClosePosition(c.Request().Context(), request)
 	if err != nil {
 		logrus.Error(fmt.Errorf("trading - ClosePosition - ClosePosition: %w", err))
 		return &echo.HTTPError{
