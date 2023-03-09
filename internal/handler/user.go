@@ -269,7 +269,7 @@ func (u *User) Update(c echo.Context) (err error) {
 // @Success      200	object		model.User
 // @Failure      403	{object}	echo.HTTPError
 // @Failure      500	{object}	echo.HTTPError
-// @Router       /admin/userByID [get]
+// @Router       /userByID [get]
 // @Security Bearer
 func (u *User) UserByID(c echo.Context) (err error) {
 	id := c.Request().Header.Get("id")

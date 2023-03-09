@@ -29,7 +29,7 @@ type PriceService interface {
 
 // PriceRequest websocket request
 type PriceRequest struct {
-	Names []string `json:"names" validate:"required,dive,alpha,gte=2,lte=25"`
+	Names []string `json:"names" validate:"required,dive,alpha,gte=2,lte=25" example:"gold, google, tesla, oil"`
 }
 
 // PriceResponse websocket response
@@ -124,10 +124,10 @@ type GetCurrentPriceResponse struct {
 // @Tags         prices
 // @Accept       json
 // @Produce      json
-// @Param        body	body 	PriceRequest  true  "Prices list"
-// @Success      200   	object	GetCurrentPriceResponse
+// @Param        names	body 		PriceRequest  true  "Prices list"
+// @Success      200   	object		GetCurrentPriceResponse
 // @Failure      500	{object}	echo.HTTPError
-// @Router       /getCurrentPrices [post]
+// @Router       /getCurrentPrices	[post]
 // @Security Bearer
 func (p *Price) GetCurrentPrices(c echo.Context) (err error) {
 	names := &PriceRequest{}
