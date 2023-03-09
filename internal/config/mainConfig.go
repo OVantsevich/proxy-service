@@ -9,7 +9,7 @@ import (
 
 // MainConfig with init data
 type MainConfig struct {
-	JwtKey string `env:"JWT_KEY,notEmpty" envDefault:"874967EC3EA3490F8F2EF6478B72A756"`
+	JwtKey string `env:"JWT_KEY,notEmpty" envDefault:" jwtSecretToken"`
 	Port   string `env:"PORT,notEmpty" envDefault:"8080"`
 
 	PriceServicePort string `env:"PRICE_SERVICE_PORT,notEmpty" envDefault:"4000"`

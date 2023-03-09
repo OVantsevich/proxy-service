@@ -113,7 +113,7 @@ func (u *User) Signup(c echo.Context) (err error) {
 
 // LoginRequest login request
 type LoginRequest struct {
-	Login    string `json:"login" validate:"required,alphanum,gte=5,lte=20" example:"Use	r123"`
+	Login    string `json:"login" validate:"required,alphanum,gte=5,lte=20" example:"User123"`
 	Password string `json:"password" validate:"required" example:"strongPassword@123"`
 }
 

@@ -83,7 +83,8 @@ func (a *Account) GetUserAccount(c echo.Context) error {
 
 // AmountRequest inc dec amount request
 type AmountRequest struct {
-	Amount float64 `json:"amount" validate:"required,gte=0"`
+	Amount    float64 `json:"amount" validate:"required,gte=0"`
+	AccountID string  `json:"accountID" validate:"required"`
 }
 
 // IncreaseAmount godoc
@@ -100,7 +101,6 @@ type AmountRequest struct {
 //
 //nolint:dupl //just because
 func (a *Account) IncreaseAmount(c echo.Context) (err error) {
-	id := idFromContext(c)
 	amount := &AmountRequest{}
 	err = c.Bind(amount)
 	if err != nil {
@@ -118,7 +118,7 @@ func (a *Account) IncreaseAmount(c echo.Context) (err error) {
 		}
 	}
 
-	err = a.accountService.IncreaseAmount(c.Request().Context(), id, amount.Amount)
+	err = a.accountService.IncreaseAmount(c.Request().Context(), amount.AccountID, amount.Amount)
 	if err != nil {
 		err = fmt.Errorf("account - IncreaseAmount - IncreaseAmount: %w", err)
 		logrus.Error(err)
@@ -145,7 +145,6 @@ func (a *Account) IncreaseAmount(c echo.Context) (err error) {
 //
 //nolint:dupl //just because
 func (a *Account) DecreaseAmount(c echo.Context) (err error) {
-	id := idFromContext(c)
 	amount := &AmountRequest{}
 	err = c.Bind(amount)
 	if err != nil {
@@ -163,7 +162,7 @@ func (a *Account) DecreaseAmount(c echo.Context) (err error) {
 		}
 	}
 
-	err = a.accountService.DecreaseAmount(c.Request().Context(), id, amount.Amount)
+	err = a.accountService.DecreaseAmount(c.Request().Context(), amount.AccountID, amount.Amount)
 	if err != nil {
 		err = fmt.Errorf("account - DecreaseAmount - IncreaseAmount: %w", err)
 		logrus.Error(err)

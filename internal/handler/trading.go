@@ -53,7 +53,7 @@ type OpenPositionRequest struct {
 	User          string  `json:"user"`
 	Name          string  `json:"name" validate:"required,alpha,gte=2,lte=30"`
 	Amount        float64 `json:"amount" validate:"required,gte=0"`
-	ShortPosition bool    `json:"short_position" validate:"required"`
+	ShortPosition bool    `json:"short_position"`
 }
 
 // OpenPosition godoc

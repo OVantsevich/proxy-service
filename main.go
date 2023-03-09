@@ -2,7 +2,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	prsProto "github.com/OVantsevich/Price-Service/proto"
+	"github.com/OVantsevich/proxy-service/internal/model"
 	"net/http"
 
 	pasProto "github.com/OVantsevich/Payment-Service/proto"
@@ -11,7 +14,6 @@ import (
 	_ "github.com/OVantsevich/proxy-service/docs"
 	"github.com/OVantsevich/proxy-service/internal/config"
 	"github.com/OVantsevich/proxy-service/internal/handler"
-	"github.com/OVantsevich/proxy-service/internal/model"
 	"github.com/OVantsevich/proxy-service/internal/repository"
 	"github.com/OVantsevich/proxy-service/internal/service"
 
@@ -89,12 +91,12 @@ func main() {
 			return []byte(cfg.JwtKey), nil
 		},
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return model.CustomClaims{}
+			return new(model.CustomClaims)
 		},
 	}))
 
-	withAuthentication.POST("/update", userHandler.Update)
-	withAuthentication.POST("/userByID", userHandler.UserByID)
+	withAuthentication.PUT("/update", userHandler.Update)
+	withAuthentication.GET("/userByID", userHandler.UserByID)
 
 	connPayment, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.PaymentServiceHost, cfg.PaymentServicePort), opts...)
 	if err != nil {
@@ -106,26 +108,26 @@ func main() {
 	accountHandler := handler.NewAccountHandler(accountService)
 	logrus.Infof("account handler started")
 
-	withAuthentication.GET("/createAccount", accountHandler.CreateAccount)
+	withAuthentication.POST("/createAccount", accountHandler.CreateAccount)
 	withAuthentication.GET("/getUserAccount", accountHandler.GetUserAccount)
 	withAuthentication.POST("/increaseAmount", accountHandler.IncreaseAmount)
 	withAuthentication.POST("/decreaseAmount", accountHandler.DecreaseAmount)
 
-	//connPrice, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.PriceServiceHost, cfg.PriceServicePort), opts...)
-	//if err != nil {
-	//	logrus.Fatal("Fatal Dial: ", err)
-	//}
-	//prsClient := prsProto.NewPriceServiceClient(connPrice)
-	//priceRepository, err := repository.NewPriceServiceRepository(context.Background(), prsClient)
-	//if err != nil {
-	//	logrus.Fatal(err)
-	//}
-	//priceService := service.NewPriceService(context.Background(), priceRepository, repository.NewListenersRepository())
-	//priceHandler := handler.NewPriceHandler(priceService)
-	//logrus.Infof("price handler started")
-	//
-	//withAuthentication.GET("/getCurrentPrices", priceHandler.GetCurrentPrices)
-	//withAuthentication.GET("/subscribe", priceHandler.Subscribe)
+	connPrice, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.PriceServiceHost, cfg.PriceServicePort), opts...)
+	if err != nil {
+		logrus.Fatal("Fatal Dial: ", err)
+	}
+	prsClient := prsProto.NewPriceServiceClient(connPrice)
+	priceRepository, err := repository.NewPriceServiceRepository(context.Background(), prsClient)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	priceService := service.NewPriceService(context.Background(), priceRepository, repository.NewListenersRepository())
+	priceHandler := handler.NewPriceHandler(priceService)
+	logrus.Infof("price handler started")
+
+	withAuthentication.POST("/getCurrentPrices", priceHandler.GetCurrentPrices)
+	withAuthentication.GET("/subscribe", priceHandler.Subscribe)
 
 	connTrading, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.TradingServiceHost, cfg.TradingServicePort), opts...)
 	if err != nil {
