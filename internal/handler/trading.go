@@ -122,13 +122,9 @@ func (t *Trading) OpenPosition(c echo.Context) error {
 //nolint:dupl //just because
 func (t *Trading) GetPositionByID(c echo.Context) error {
 	request := &GetPositionByIDRequest{}
-	err := c.Bind(request)
-	if err != nil {
-		logrus.Error(fmt.Errorf("trading - GetPositionByID - Bind: %w", err))
-		return err
-	}
+	request.ID = c.Request().Header.Get("id")
 
-	err = c.Validate(request)
+	err := c.Validate(request)
 	if err != nil {
 		err = fmt.Errorf("trading - GetPositionByID - Validate: %w", err)
 		logrus.Error(err)
