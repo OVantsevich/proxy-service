@@ -71,7 +71,7 @@ type OpenPositionRequest struct {
 func (t *Trading) OpenPosition(c echo.Context) error {
 	id := idFromContext(c)
 
-	position := &model.Position{}
+	position := &OpenPositionRequest{}
 	err := c.Bind(position)
 	if err != nil {
 		logrus.Error(fmt.Errorf("trading - OpenPosition - Bind: %w", err))
@@ -89,7 +89,12 @@ func (t *Trading) OpenPosition(c echo.Context) error {
 	}
 
 	position.User = id
-	positionResponse, err := t.tradingService.OpenPosition(c.Request().Context(), position)
+	positionResponse, err := t.tradingService.OpenPosition(c.Request().Context(), &model.Position{
+		User:          position.User,
+		Name:          position.Name,
+		Amount:        position.Amount,
+		ShortPosition: position.ShortPosition,
+	})
 	if err != nil {
 		logrus.Error(fmt.Errorf("trading - OpenPosition - OpenPosition: %w", err))
 		return &echo.HTTPError{

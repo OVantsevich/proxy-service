@@ -2,12 +2,10 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
 	pasProto "github.com/OVantsevich/Payment-Service/proto"
-	prsProto "github.com/OVantsevich/Price-Service/proto"
 	tsProto "github.com/OVantsevich/Trading-Service/proto"
 	usProto "github.com/OVantsevich/User-Service/proto"
 	_ "github.com/OVantsevich/proxy-service/docs"
@@ -113,21 +111,21 @@ func main() {
 	withAuthentication.POST("/increaseAmount", accountHandler.IncreaseAmount)
 	withAuthentication.POST("/decreaseAmount", accountHandler.DecreaseAmount)
 
-	connPrice, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.PriceServiceHost, cfg.PriceServicePort), opts...)
-	if err != nil {
-		logrus.Fatal("Fatal Dial: ", err)
-	}
-	prsClient := prsProto.NewPriceServiceClient(connPrice)
-	priceRepository, err := repository.NewPriceServiceRepository(context.Background(), prsClient)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	priceService := service.NewPriceService(context.Background(), priceRepository, repository.NewListenersRepository())
-	priceHandler := handler.NewPriceHandler(priceService)
-	logrus.Infof("price handler started")
-
-	withAuthentication.GET("/getCurrentPrices", priceHandler.GetCurrentPrices)
-	withAuthentication.GET("/subscribe", priceHandler.Subscribe)
+	//connPrice, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.PriceServiceHost, cfg.PriceServicePort), opts...)
+	//if err != nil {
+	//	logrus.Fatal("Fatal Dial: ", err)
+	//}
+	//prsClient := prsProto.NewPriceServiceClient(connPrice)
+	//priceRepository, err := repository.NewPriceServiceRepository(context.Background(), prsClient)
+	//if err != nil {
+	//	logrus.Fatal(err)
+	//}
+	//priceService := service.NewPriceService(context.Background(), priceRepository, repository.NewListenersRepository())
+	//priceHandler := handler.NewPriceHandler(priceService)
+	//logrus.Infof("price handler started")
+	//
+	//withAuthentication.GET("/getCurrentPrices", priceHandler.GetCurrentPrices)
+	//withAuthentication.GET("/subscribe", priceHandler.Subscribe)
 
 	connTrading, err := grpc.Dial(fmt.Sprintf("%s:%s", cfg.TradingServiceHost, cfg.TradingServicePort), opts...)
 	if err != nil {

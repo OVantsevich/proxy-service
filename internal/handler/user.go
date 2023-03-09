@@ -113,7 +113,7 @@ func (u *User) Signup(c echo.Context) (err error) {
 
 // LoginRequest login request
 type LoginRequest struct {
-	Login    string `json:"login" validate:"required,alphanum,gte=5,lte=20" example:"User123"`
+	Login    string `json:"login" validate:"required,alphanum,gte=5,lte=20" example:"Use	r123"`
 	Password string `json:"password" validate:"required" example:"strongPassword@123"`
 }
 
@@ -129,16 +129,17 @@ type LoginRequest struct {
 // @Failure      500		{object}	echo.HTTPError
 // @Router       /auth/login [post]
 func (u *User) Login(c echo.Context) (err error) {
-	user := &model.User{}
+	user := &LoginRequest{}
 	err = c.Bind(user)
 	if err != nil {
-		logrus.Error(fmt.Errorf("user - Login - Bind: %w", err))
+		err = fmt.Errorf("user - Login - Bind: %w", err)
+		logrus.Error(err)
 		return err
 	}
 
 	err = c.Validate(user)
 	if err != nil {
-		err = fmt.Errorf("user - Signup - Validate: %w", err)
+		err = fmt.Errorf("user - Login - Validate: %w", err)
 		logrus.Error(err)
 		return &echo.HTTPError{
 			Code:    http.StatusBadRequest,
@@ -149,7 +150,8 @@ func (u *User) Login(c echo.Context) (err error) {
 	var tokenPair *model.TokenPair
 	tokenPair, err = u.userService.Login(c.Request().Context(), user.Login, user.Password)
 	if err != nil {
-		logrus.Error(fmt.Errorf("user - Login - Login: %w", err))
+		err = fmt.Errorf("user - Login - Login: %w", err)
+		logrus.Error(err)
 		return &echo.HTTPError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),

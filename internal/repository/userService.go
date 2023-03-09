@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	usProto "github.com/OVantsevich/User-Service/proto"
+
 	"github.com/OVantsevich/proxy-service/internal/model"
 )
 
