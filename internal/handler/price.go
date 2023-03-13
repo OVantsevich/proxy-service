@@ -3,6 +3,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -60,7 +61,7 @@ func NewPriceHandler(s PriceService) *Price {
 // @Router       /subscribe [get]
 // @Security Bearer
 func (p *Price) Subscribe(c echo.Context) error {
-	websocket.Handler(func(ws *websocket.Conn) {
+	h := websocket.Handler(func(ws *websocket.Conn) {
 		defer ws.Close()
 
 		socketID := uuid.New()
@@ -82,7 +83,9 @@ func (p *Price) Subscribe(c echo.Context) error {
 				return
 			}
 		}
-	}).ServeHTTP(c.Response(), c.Request())
+	})
+	s := websocket.Server{Handler: h, Handshake: nil}
+	s.ServeHTTP(c.Response(), c.Request())
 	return nil
 }
 
@@ -102,11 +105,19 @@ func sendPrice(ws *websocket.Conn, in chan *model.Price) {
 
 func getPrice(ws *websocket.Conn, out chan *PriceRequest) {
 	for {
-		var priceRequest *PriceRequest
-		err := websocket.Message.Receive(ws, priceRequest)
+		priceRequest := &PriceRequest{}
+		var data []byte
+		err := websocket.Message.Receive(ws, &data)
 		if err != nil {
 			close(out)
 			logrus.Errorf("price - Subscribe - getPriceRequest - Receive: %v", err)
+			return
+		}
+
+		err = json.Unmarshal(data, priceRequest)
+		if err != nil {
+			close(out)
+			logrus.Errorf("price - Subscribe - getPriceRequest - Unmarshal: %v", err)
 			return
 		}
 		out <- priceRequest
