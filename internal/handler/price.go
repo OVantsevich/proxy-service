@@ -30,7 +30,7 @@ type PriceService interface {
 
 // PriceRequest websocket request
 type PriceRequest struct {
-	Names []string `json:"names" validate:"required,dive,alpha,gte=2,lte=25" example:"gold, google, tesla, oil"`
+	Names []string `json:"names" validate:"required,dive,alpha,gte=2,lte=25" example:"gold,google,tesla,oil"`
 }
 
 // PriceResponse websocket response
@@ -95,7 +95,14 @@ func sendPrice(ws *websocket.Conn, in chan *model.Price) {
 		if !ok {
 			return
 		}
-		err := websocket.Message.Send(ws, data)
+
+		marshalData, err := json.Marshal(data)
+		if err != nil {
+			logrus.Errorf("price - Subscribe - sendPrice - Marshal: %v", err)
+			return
+		}
+
+		err = websocket.Message.Send(ws, marshalData)
 		if err != nil {
 			logrus.Errorf("price - Subscribe - sendPriceResponse - Send: %v", err)
 			return

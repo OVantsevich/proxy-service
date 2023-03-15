@@ -123,16 +123,6 @@ func (t *Trading) OpenPosition(c echo.Context) error {
 func (t *Trading) GetPositionByID(c echo.Context) error {
 	request := c.Request().Header.Get("id")
 
-	err := c.Validate(request)
-	if err != nil {
-		err = fmt.Errorf("trading - GetPositionByID - Validate: %w", err)
-		logrus.Error(err)
-		return &echo.HTTPError{
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
-		}
-	}
-
 	positionResponse, err := t.tradingService.GetPositionByID(c.Request().Context(), request)
 	if err != nil {
 		logrus.Error(fmt.Errorf("trading - GetPositionByID - GetPositionByID: %w", err))
